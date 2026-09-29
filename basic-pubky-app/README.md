@@ -59,31 +59,7 @@ export const MAX_EVENT_BYTES = 8 * 1024
 
 Change `APP_CLIENT_ID` first when starting a real app; the path and capabilities are derived from it. The file also centralizes testnet and relay settings.
 
+`MAX_EVENT_BYTES` sets the event payload limit (8 KiB by default); oversized payloads stop the stream and display an error.
+
 Set `VITE_PUBKY_STORAGE_NAMESPACE` when multiple builds share an origin and should keep their saved
 sessions separate.
-
-## SDK 0.14.0
-
-This template uses [Pubky SDK 0.14.0](https://github.com/pubky/pubky-homeserver/releases/tag/v0.14.0).
-The grant sign-in, browser session store, and JSON storage APIs remain compatible with 0.12.0.
-
-The event subscription uses `maxEventBytes(MAX_EVENT_BYTES)`, introduced in SDK 0.13.0,
-to limit SSE payloads to 8 KiB. Events contain resource metadata, not file contents.
-The limit applies separately to accumulated event data, each event name, and each ID;
-comments and framing are excluded, and it is not a total stream limit. An oversized
-payload ends the stream with an error, which the app displays. Adjust `MAX_EVENT_BYTES`
-in `src/config.ts` if your events need more room. The SDK leaves this limit unbounded
-unless it is configured.
-
-The SDK also limits captured HTTP error bodies to 4 KiB by default. Custom clients
-can override this with `new Client({ maxErrorBodyBytes: ... })` and `Pubky.withClient(client)`;
-the template keeps the default for both mainnet and local testnet. This limit does
-not limit successful JSON file reads. See the versioned
-[event stream API](https://github.com/pubky/pubky-homeserver/blob/v0.14.0/pubky-sdk/bindings/js/src/actors/event_stream.rs)
-and [client configuration](https://github.com/pubky/pubky-homeserver/blob/v0.14.0/pubky-sdk/bindings/js/src/client/constructor.rs).
-
-Keep session storage paths such as `/pub/template/files/` unchanged. The SDK handles
-the `/storage/{user}/...` transport routes and falls back to legacy addressing
-when the homeserver does not advertise support. Directory listings still return
-`pubky://...` resource URLs; they are not transport URLs. See the versioned
-[storage routing source](https://github.com/pubky/pubky-homeserver/blob/v0.14.0/pubky-sdk/src/client/http_targets/storage.rs).
