@@ -12,7 +12,7 @@ This template focuses on Pubky’s core building blocks. The included vanilla HT
 - A development-only authentication shortcut that removes sign-in friction on a local testnet. It requires `signup_mode = "open"` and is not intended as a pattern for production apps.
 - Session persistence across page reloads via the SDK browser session store, plus sign out.
 - File storage helpers under a configured path on the user’s Homeserver.
-- A live event stream subscription scoped to the configured path, with a configurable payload size limit.
+- A live event stream subscription scoped to the configured path.
 - Preconfigured weekly Dependabot updates for all npm dependencies, with Pubky stack packages grouped together.
 
 ## What's Not Included
