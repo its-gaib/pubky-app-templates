@@ -21,7 +21,7 @@ export async function startAppEventStream(
   const eventStream = await pubky
     .eventStreamForUser(session.info.publicKey, null)
     .path(APP_PATH)
-    .maxEventBytes(MAX_EVENT_BYTES)
+    .maxEventBytes(MAX_EVENT_BYTES) // optional; SSE payload sizes are uncapped by default.
     .live()
     .subscribe()
 
