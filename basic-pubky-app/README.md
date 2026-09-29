@@ -1,4 +1,4 @@
-[![Pubky](https://img.shields.io/badge/Pubky-0.12.0-blue)](https://www.npmjs.com/package/@synonymdev/pubky/v/0.12.0)
+[![Pubky](https://img.shields.io/badge/Pubky-0.14.0-blue)](https://www.npmjs.com/package/@synonymdev/pubky/v/0.14.0)
 
 # Basic Pubky App
 
@@ -12,7 +12,7 @@ This template focuses on Pubky’s core building blocks. The included vanilla HT
 - A development-only authentication shortcut that removes sign-in friction on a local testnet. It requires `signup_mode = "open"` and is not intended as a pattern for production apps.
 - Session persistence across page reloads via the SDK browser session store, plus sign out.
 - File storage helpers under a configured path on the user’s Homeserver.
-- A live event stream subscription scoped to the configured path.
+- A live event stream subscription scoped to the configured path, with a configurable payload size limit.
 - Preconfigured weekly Dependabot updates for all npm dependencies, with Pubky stack packages grouped together.
 
 ## What's Not Included
@@ -54,16 +54,36 @@ App-specific configuration lives in `src/config.ts`:
 export const APP_CLIENT_ID = 'template'
 export const APP_PATH = `/pub/${APP_CLIENT_ID}/`
 export const APP_CAPABILITIES = `${APP_PATH}:rw`
+export const MAX_EVENT_BYTES = 8 * 1024
 ```
 
 Change `APP_CLIENT_ID` first when starting a real app; the path and capabilities are derived from it. The file also centralizes testnet and relay settings.
 
-With [Pubky SDK 0.12.0](https://github.com/pubky/pubky-homeserver/releases/tag/v0.12.0),
-keep session storage paths such as `/pub/template/files/` unchanged. The SDK handles
-the new `/storage/{user}/...` transport routes and falls back to legacy addressing
-when the homeserver does not advertise support. Directory listings still return
-`pubky://...` resource URLs; they are not transport URLs. See the versioned
-[storage routing source](https://github.com/pubky/pubky-homeserver/blob/v0.12.0/pubky-sdk/src/client/http_targets/storage.rs).
-
 Set `VITE_PUBKY_STORAGE_NAMESPACE` when multiple builds share an origin and should keep their saved
 sessions separate.
+
+## SDK 0.14.0
+
+This template uses [Pubky SDK 0.14.0](https://github.com/pubky/pubky-homeserver/releases/tag/v0.14.0).
+The grant sign-in, browser session store, and JSON storage APIs remain compatible with 0.12.0.
+
+The event subscription uses `maxEventBytes(MAX_EVENT_BYTES)`, introduced in SDK 0.13.0,
+to limit SSE payloads to 8 KiB. Events contain resource metadata, not file contents.
+The limit applies separately to accumulated event data, each event name, and each ID;
+comments and framing are excluded, and it is not a total stream limit. An oversized
+payload ends the stream with an error, which the app displays. Adjust `MAX_EVENT_BYTES`
+in `src/config.ts` if your events need more room. The SDK leaves this limit unbounded
+unless it is configured.
+
+The SDK also limits captured HTTP error bodies to 4 KiB by default. Custom clients
+can override this with `new Client({ maxErrorBodyBytes: ... })` and `Pubky.withClient(client)`;
+the template keeps the default for both mainnet and local testnet. This limit does
+not limit successful JSON file reads. See the versioned
+[event stream API](https://github.com/pubky/pubky-homeserver/blob/v0.14.0/pubky-sdk/bindings/js/src/actors/event_stream.rs)
+and [client configuration](https://github.com/pubky/pubky-homeserver/blob/v0.14.0/pubky-sdk/bindings/js/src/client/constructor.rs).
+
+Keep session storage paths such as `/pub/template/files/` unchanged. The SDK handles
+the `/storage/{user}/...` transport routes and falls back to legacy addressing
+when the homeserver does not advertise support. Directory listings still return
+`pubky://...` resource URLs; they are not transport URLs. See the versioned
+[storage routing source](https://github.com/pubky/pubky-homeserver/blob/v0.14.0/pubky-sdk/src/client/http_targets/storage.rs).
